@@ -58,15 +58,21 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+## Clean Architecture
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+> domain, use_cases, infrastructure 3가지 main packages 가 있음
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Domain
+  - 비즈니스 코드와 해당 로직이 포함
+  - frameworks(이 경우 NestJS), use_cases, infrastructure와 같은 외부 종속성이 없음
+- Use Cases
+  - 지휘자와 같은 역할
+  - 비즈니스 로직을 실행하기 위해 도메인 패키지에만 의존
+  - use_cases 는 infrastructure(framework 또는 npm module 포함)에 대한 종속성이 없어야 함
+- Infrastructure
+  - 모든 기술적 세부 사항, 구성, 구현(database, web services, npm module 등)이 포함
+  - 비즈니스 로직이 포함되어서는 안 됨
+  - infrastructure 에는 domain, use_cases and frameworks에 대한 의존성이 있음
 
 ## License
 
