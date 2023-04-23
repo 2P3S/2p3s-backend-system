@@ -1,0 +1,18 @@
+GET http://localhost:3000/api HTTP/1.1
+
+# 채팅방
+### 채팅방 생성
+POST http://localhost:3000/api/chat/room/create HTTP/1.1
+Content-Type: application/json
+
+{
+  "roomName": "채팅방 이름 샘플1"
+}
+
+### 채팅방 입장
+GET http://localhost:3000/api/chat/room/enter/65ec927c8af26e2bd3a0f56509bc77b2fb620948218220049fb147a4b9a90aa9 HTTP/1.1
+Content-Type: application/json
+
+{
+  "memberName": "멤버 이름 샘플1"
+}
