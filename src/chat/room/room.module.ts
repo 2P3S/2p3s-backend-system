@@ -8,5 +8,6 @@ import { Room, RoomSchema } from '../entities/room.entities';
     MongooseModule.forFeature([{ name: Room.name, schema: RoomSchema }]),
   ],
   providers: [RoomService],
+  exports: [RoomService],
 })
 export class RoomModule {}
