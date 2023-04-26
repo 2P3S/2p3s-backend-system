@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Room } from './room.entities';
 
 export type MemberDocument = HydratedDocument<Member>;
@@ -28,6 +28,10 @@ export class Member {
     this.name = name;
     this.status = false;
     this.room = room;
+  }
+
+  getId(): string {
+    return this.id;
   }
 }
 

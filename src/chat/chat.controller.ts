@@ -18,7 +18,7 @@ export class ChatController {
   enterRoom(
     @Param('roomId') roomId: string,
     @Body() userData: EnterRoomDto,
-  ): Member {
+  ): Promise<Member> {
     return this.chatService.enterRoom(roomId, userData);
   }
 }
