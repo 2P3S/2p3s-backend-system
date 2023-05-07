@@ -5,6 +5,10 @@ import { Room } from './room.entities';
 export type MemberDocument = HydratedDocument<Member>;
 
 @Schema({
+  timestamps: {
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+  },
   toJSON: {
     transform: function (doc, ret) {
       delete ret.__v;

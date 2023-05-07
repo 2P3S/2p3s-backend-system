@@ -1,5 +1,5 @@
 import { Model, ObjectId } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Member } from '../entities/member.entities';
 
@@ -14,5 +14,17 @@ export class MemberService {
   async createMember(memberData: Member): Promise<Member> {
     const createdMember = await new this.memberModel({ ...memberData });
     return createdMember.save();
+  }
+
+  async updateMemberStatus(memberId: string | ObjectId): Promise<Member> {
+    const member = await this.memberModel.findByIdAndUpdate(memberId, {
+      $set: { status: true },
+    });
+
+    if (!member) {
+      throw new NotFoundException(`Member ${memberId} is not found`);
+    }
+
+    return this.getMember(memberId);
   }
 }

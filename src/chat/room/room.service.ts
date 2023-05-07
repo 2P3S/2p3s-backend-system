@@ -21,15 +21,16 @@ export class RoomService {
     roomId: string,
     updateMember: Member,
   ): Promise<Room> {
-    const existingRoom = await this.roomModel.findByIdAndUpdate(
+    const room = await this.roomModel.findByIdAndUpdate(
       roomId,
       { $push: { members: updateMember } },
       { new: true },
     );
 
-    if (!existingRoom) {
-      throw new NotFoundException(`Room ${roomId} is  not found`);
+    if (!room) {
+      throw new NotFoundException(`Room ${roomId} is not found`);
     }
-    return existingRoom;
+
+    return this.getRoom(roomId);
   }
 }
