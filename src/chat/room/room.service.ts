@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Room } from '../entities/room.entities';
@@ -13,16 +13,16 @@ export class RoomService {
     return createdRoom.save();
   }
 
-  async getRoom(roomId: string): Promise<Room> {
-    return await this.roomModel.findOne({ id: roomId });
+  async getRoom(roomId: string | ObjectId): Promise<Room> {
+    return this.roomModel.findById(roomId);
   }
 
   async updateRoomForAddMember(
     roomId: string,
     updateMember: Member,
   ): Promise<Room> {
-    const existingRoom = await this.roomModel.findOneAndUpdate(
-      { id: roomId },
+    const existingRoom = await this.roomModel.findByIdAndUpdate(
+      roomId,
       { $push: { members: updateMember } },
       { new: true },
     );

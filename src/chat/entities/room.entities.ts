@@ -1,14 +1,20 @@
-import * as mongoose from 'mongoose';
+import { HydratedDocument, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
 import { Member } from './member.entities';
 
 export type RoomDocument = HydratedDocument<Room>;
 
-@Schema()
+@Schema({
+  toJSON: {
+    transform: function (doc, ret) {
+      delete ret.__v;
+      ret.id = ret._id;
+      delete ret._id;
+    },
+  },
+})
 export class Room {
-  @Prop({ required: true })
-  id: string;
+  id: ObjectId;
 
   @Prop({ required: true })
   name: string;
@@ -17,15 +23,14 @@ export class Room {
     required: true,
     type: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'Member',
       },
     ],
   })
   members: Member[];
 
-  constructor(id: string, name: string) {
-    this.id = id;
+  constructor(name: string) {
     this.name = name;
     this.members = [];
   }
