@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### 채팅방 입장
-GET http://localhost:3000/api/chat/room/enter/65ec927c8af26e2bd3a0f56509bc77b2fb620948218220049fb147a4b9a90aa9 HTTP/1.1
+GET http://localhost:3000/api/chat/room/enter/645767d1c975ba87558164cb HTTP/1.1
 Content-Type: application/json
 
 {

@@ -10,8 +10,8 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('room/create')
-  createRoom(@Body() roomData: CreateRoomDto): Room {
-    return this.chatService.create(roomData);
+  createRoom(@Body() roomData: CreateRoomDto): Promise<Room> {
+    return this.chatService.createRoom(roomData);
   }
 
   @Get('room/enter/:roomId')
