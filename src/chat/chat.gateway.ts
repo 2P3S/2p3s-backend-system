@@ -56,7 +56,10 @@ export class ChatGateway
         throw new WsException('존재하지 않는 방입니다.');
       }
 
-      const member = await this.memberManager.updateMemberStatus(data.memberId);
+      const member = await this.memberManager.updateMemberStatus(
+        data.memberId,
+        true,
+      );
       if (!member) {
         throw new WsException('존재하지 않는 사용자입니다.');
       }
@@ -76,6 +79,40 @@ export class ChatGateway
     } catch (err) {
       this.logger.error(err.message);
       client.emit('join-failed', { success: false, message: err.message });
+    }
+  }
+
+  @SubscribeMessage('message')
+  async handleMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { roomId: string; memberId: string; message: string },
+  ) {
+    try {
+      const room = await this.roomManager.getRoom(data.roomId);
+      if (!room) {
+        throw new WsException('존재하지 않는 방입니다.');
+      }
+
+      const member = await this.memberManager.getMember(data.memberId);
+      if (!member) {
+        throw new WsException('존재하지 않는 사용자입니다.');
+      }
+
+      if (member.room.valueOf() !== room.id) {
+        throw new WsException('방에 속하지 않은 사용자입니다.');
+      }
+
+      client.to(data.roomId).emit('message', {
+        success: true,
+        message: data.message,
+        data: {
+          room,
+          member,
+        },
+      });
+    } catch (err) {
+      this.logger.error(err.message);
+      client.emit('message-failed', { success: false, message: err.message });
     }
   }
 }

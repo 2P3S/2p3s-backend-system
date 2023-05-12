@@ -16,9 +16,12 @@ export class MemberService {
     return createdMember.save();
   }
 
-  async updateMemberStatus(memberId: string | ObjectId): Promise<Member> {
+  async updateMemberStatus(
+    memberId: string | ObjectId,
+    status: boolean,
+  ): Promise<Member> {
     const member = await this.memberModel.findByIdAndUpdate(memberId, {
-      $set: { status: true },
+      $set: { status },
     });
 
     if (!member) {
