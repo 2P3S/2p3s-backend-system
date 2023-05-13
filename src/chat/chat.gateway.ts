@@ -41,8 +41,20 @@ export class ChatGateway
     this.logger.log(`✅ ${socket.id} 소켓 연결 성공`);
   }
 
-  handleDisconnect(@ConnectedSocket() socket: Socket) {
+  async handleDisconnect(@ConnectedSocket() socket: Socket) {
     this.logger.log(`❌ ${socket.id} 소켓 연결 해제`);
+    const member = await this.memberManager.updateMemberDisconnected(socket.id);
+    if (!member) {
+      this.logger.error('handleDisconnect find socketId failed');
+    }
+
+    socket.to(member.room.toString()).emit('member-disconnected', {
+      success: true,
+      message: '사용자가 나갔습니다.',
+      data: {
+        member,
+      },
+    });
   }
 
   @SubscribeMessage('join-room')
@@ -56,10 +68,12 @@ export class ChatGateway
         throw new WsException('존재하지 않는 방입니다.');
       }
 
-      const member = await this.memberManager.updateMemberStatus(
+      const member = await this.memberManager.updateMemberConnected(
         data.memberId,
         true,
+        client.id,
       );
+      console.log(member);
       if (!member) {
         throw new WsException('존재하지 않는 사용자입니다.');
       }

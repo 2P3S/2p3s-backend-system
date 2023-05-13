@@ -33,10 +33,14 @@ export class Member {
   })
   room: Room;
 
+  @Prop({ required: true })
+  socketId: string;
+
   constructor(name: string, room: Room) {
     this.name = name;
     this.status = false;
     this.room = room;
+    this.socketId = '';
   }
 }
 

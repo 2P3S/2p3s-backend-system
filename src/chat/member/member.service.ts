@@ -16,12 +16,13 @@ export class MemberService {
     return createdMember.save();
   }
 
-  async updateMemberStatus(
+  async updateMemberConnected(
     memberId: string | ObjectId,
     status: boolean,
+    socketId?: string,
   ): Promise<Member> {
     const member = await this.memberModel.findByIdAndUpdate(memberId, {
-      $set: { status },
+      $set: { status, socketId },
     });
 
     if (!member) {
@@ -29,5 +30,18 @@ export class MemberService {
     }
 
     return this.getMember(memberId);
+  }
+
+  async updateMemberDisconnected(socketId: string): Promise<Member> {
+    const member = await this.memberModel.findOneAndUpdate(
+      { socketId },
+      { $set: { status: false, socketId: null } },
+    );
+
+    if (!member) {
+      throw new NotFoundException(`Socket ${socketId} is not found`);
+    }
+
+    return this.getMember(member.id);
   }
 }
