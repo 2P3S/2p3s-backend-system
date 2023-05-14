@@ -13,6 +13,20 @@ import { Logger } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
 import { RoomService } from './room/room.service';
 import { MemberService } from './member/member.service';
+import { Room } from './entities/room.entities';
+import { Member } from './entities/member.entities';
+
+type EventNames =
+  | 'join-success'
+  | 'member-connected'
+  | 'member-disconnected'
+  | 'message';
+const MESSAGES: { [eventName in EventNames]: string } = {
+  'join-success': '방 입장에 성공했습니다.',
+  'member-connected': '사용자가 입장했습니다.',
+  'member-disconnected': '사용자가 나갔습니다.',
+  message: '메시지를 전송했습니다.',
+};
 
 @WebSocketGateway({
   cors: {
@@ -43,126 +57,108 @@ export class ChatGateway
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
     this.logger.log(`❌ ${socket.id} 소켓 연결 해제`);
-    const member = await this.memberManager.updateMemberDisconnected(socket.id);
-    if (!member) {
-      this.logger.error('handleDisconnect find socketId failed');
-    }
-
-    socket.to(member.room.toString()).emit('member-disconnected', {
-      success: true,
-      message: '사용자가 나갔습니다.',
-      data: {
-        member,
-      },
+    const member = await this.checkSocket(socket.id);
+    this.sendToRoom(socket, 'member-disconnected', member.room.toString(), {
+      member,
     });
   }
 
   @SubscribeMessage('join-room')
   async handleJoinRoom(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; memberId: string },
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; memberId: string },
   ) {
-    try {
-      const room = await this.roomManager.getRoom(data.roomId);
-      if (!room) {
-        throw new WsException('존재하지 않는 방입니다.');
-      }
-
-      const member = await this.memberManager.updateMemberConnected(
-        data.memberId,
-        true,
-        client.id,
-      );
-
-      if (!member) {
-        throw new WsException('존재하지 않는 사용자입니다.');
-      }
-
-      if (member.room.valueOf() !== room.id) {
-        throw new WsException('방에 속하지 않은 사용자입니다.');
-      }
-
-      client.emit('join-success', {
-        success: true,
-        message: '방 입장에 성공했습니다.',
-        data: {
-          room,
-          member,
-        },
-      });
-    } catch (err) {
-      this.logger.error(err.message);
-      client.emit('join-failed', { success: false, message: err.message });
-    }
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then((data) => this.sendMessage(socket, 'join-success', data))
+      .catch((err) => this.sendFailure(socket, err.message));
   }
 
   @SubscribeMessage('join-request')
   async handleJoin(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; memberId: string },
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; memberId: string },
   ) {
-    try {
-      const room = await this.roomManager.getRoom(data.roomId);
-      if (!room) {
-        throw new WsException('존재하지 않는 방입니다.');
-      }
-
-      const member = await this.memberManager.getMember(data.memberId);
-      if (!member) {
-        throw new WsException('존재하지 않는 사용자입니다.');
-      }
-
-      if (member.room.valueOf() !== room.id) {
-        throw new WsException('방에 속하지 않은 사용자입니다.');
-      }
-
-      client.to(data.roomId).emit('member-connected', {
-        success: true,
-        message: '사용자가 입장했습니다.',
-        data: {
-          room,
-          member,
-        },
-      });
-    } catch (err) {
-      this.logger.error(err.message);
-      client.emit('join-failed', { success: false, message: err.message });
-    }
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then((data) =>
+        this.sendToRoom(socket, 'member-connected', body.roomId, data),
+      )
+      .catch((err) => this.sendFailure(socket, err.message));
   }
 
   @SubscribeMessage('message')
   async handleMessage(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; memberId: string; message: string },
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; memberId: string; message: string },
   ) {
-    try {
-      const room = await this.roomManager.getRoom(data.roomId);
-      if (!room) {
-        throw new WsException('존재하지 않는 방입니다.');
-      }
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then((data) => this.sendToRoom(socket, 'message', body.roomId, data))
+      .catch((err) => this.sendFailure(socket, err.message));
+  }
 
-      const member = await this.memberManager.getMember(data.memberId);
-      if (!member) {
-        throw new WsException('존재하지 않는 사용자입니다.');
-      }
+  private async checkSocketBody(
+    roomId: string,
+    memberId: string,
+  ): Promise<{ room: Room; member: Member }> {
+    const room = await this.checkRoom(roomId);
+    const member = await this.checkMember(memberId);
 
-      if (member.room.valueOf() !== room.id) {
-        throw new WsException('방에 속하지 않은 사용자입니다.');
-      }
-
-      client.to(data.roomId).emit('message', {
-        success: true,
-        message: data.message,
-        data: {
-          room,
-          member,
-        },
-      });
-    } catch (err) {
-      this.logger.error(err.message);
-      client
-        .to(data.roomId)
-        .emit('message-failed', { success: false, message: err.message });
+    if (member.room.valueOf() !== room.id) {
+      throw new WsException('방에 속하지 않은 사용자입니다.');
     }
+
+    return { room, member };
+  }
+
+  private async checkRoom(roomId) {
+    const room = await this.roomManager.getRoom(roomId);
+    if (!room) {
+      throw new WsException('존재하지 않는 방입니다.');
+    }
+    return room;
+  }
+
+  private async checkMember(roomId) {
+    const member = await this.memberManager.getMember(roomId);
+    if (!member) {
+      throw new WsException('존재하지 않는 사용자입니다111.');
+    }
+    return member;
+  }
+
+  private async checkSocket(socketId) {
+    const member = await this.memberManager.updateMemberDisconnected(socketId);
+    if (!member) {
+      this.logger.error('소켓 연결 종료 실패', socketId);
+    }
+    return member;
+  }
+
+  private sendMessage(client: Socket, eventName: EventNames, data: object) {
+    client.emit(eventName, {
+      success: true,
+      message: MESSAGES[eventName],
+      data,
+    });
+  }
+
+  private sendToRoom(
+    client: Socket,
+    eventName: EventNames,
+    roomId: string,
+    data: object,
+  ) {
+    client.to(roomId).emit(eventName, {
+      success: true,
+      message: MESSAGES[eventName],
+      data,
+    });
+  }
+
+  private sendFailure(client: Socket, errorMessage: string) {
+    this.logger.error(errorMessage);
+    client.emit('failure', {
+      success: false,
+      message: errorMessage,
+    });
   }
 }
