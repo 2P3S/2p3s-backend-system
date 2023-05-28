@@ -1,8 +1,8 @@
 import { HydratedDocument, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Room } from './room.entities';
+import { Member } from './member.entities';
 
-export type MemberDocument = HydratedDocument<Member>;
+export type RoomDocument = HydratedDocument<Room>;
 
 @Schema({
   timestamps: {
@@ -17,31 +17,27 @@ export type MemberDocument = HydratedDocument<Member>;
     },
   },
 })
-export class Member {
+export class Room {
   id: ObjectId;
 
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
-  status: boolean;
-
   @Prop({
     required: true,
-    type: Types.ObjectId,
-    ref: 'Room',
+    type: [
+      {
+        type: Types.ObjectId,
+        ref: 'Member',
+      },
+    ],
   })
-  room: Room;
+  members: Member[];
 
-  @Prop({ required: false })
-  socketId: string;
-
-  constructor(name: string, room: Room) {
+  constructor(name: string) {
     this.name = name;
-    this.status = false;
-    this.room = room;
-    this.socketId = '';
+    this.members = [];
   }
 }
 
-export const MemberSchema = SchemaFactory.createForClass(Member);
+export const RoomSchema = SchemaFactory.createForClass(Room);
