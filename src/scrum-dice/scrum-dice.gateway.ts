@@ -63,15 +63,15 @@ export class ScrumDiceGateway
     });
   }
 
-  @SubscribeMessage('join-room')
-  async handleJoinRoom(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { roomId: string; memberId: string },
-  ) {
-    this.checkSocketBody(body.roomId, body.memberId)
-      .then((data) => this.sendMessage(socket, 'join-success', data))
-      .catch((err) => this.sendFailure(socket, err.message));
-  }
+  // @SubscribeMessage('join-room')
+  // async handleJoinRoom(
+  //   @ConnectedSocket() socket: Socket,
+  //   @MessageBody() body: { roomId: string; memberId: string },
+  // ) {
+  //   this.checkSocketBody(body.roomId, body.memberId)
+  //     .then((data) => this.sendMessage(socket, 'join-success', data))
+  //     .catch((err) => this.sendFailure(socket, err.message));
+  // }
 
   @SubscribeMessage('join-request')
   async handleJoin(

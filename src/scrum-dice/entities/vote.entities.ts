@@ -1,9 +1,10 @@
 import { HydratedDocument, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Room } from './room.entities';
 import { Member } from './member.entities';
-import { Vote } from './vote.entities';
+import { Card } from './card.entities';
 
-export type RoomDocument = HydratedDocument<Room>;
+export type VoteDocument = HydratedDocument<Vote>;
 
 @Schema({
   timestamps: {
@@ -18,39 +19,31 @@ export type RoomDocument = HydratedDocument<Room>;
     },
   },
 })
-export class Room {
+export class Vote {
   id: ObjectId;
 
   @Prop({ required: true })
   name: string;
 
-  @Prop({
-    required: true,
-    type: [
-      {
-        type: Types.ObjectId,
-        ref: 'Member',
-      },
-    ],
-  })
-  members: Member[];
+  @Prop({ required: true })
+  status: boolean;
+
+  @Prop({ required: true })
+  cards: Card[];
 
   @Prop({
     required: true,
-    type: [
-      {
-        type: Types.ObjectId,
-        ref: 'Vote',
-      },
-    ],
+    type: Types.ObjectId,
+    ref: 'Room',
   })
-  votes: Vote[];
+  room: Room;
 
-  constructor(name: string) {
+  constructor(name: string, room: Room) {
     this.name = name;
-    this.members = [];
-    this.votes = [];
+    this.status = false;
+    this.cards = [];
+    this.room = room;
   }
 }
 
-export const RoomSchema = SchemaFactory.createForClass(Room);
+export const VoteSchema = SchemaFactory.createForClass(Vote);
