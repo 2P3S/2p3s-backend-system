@@ -7,7 +7,7 @@ import { Room, RoomSchema } from '../entities/room.entities';
   imports: [
     MongooseModule.forFeature(
       [{ name: Room.name, schema: RoomSchema }],
-      'chat',
+      'scrum-dice',
     ),
   ],
   providers: [RoomService],

@@ -7,7 +7,7 @@ import { Member, MemberSchema } from '../entities/member.entities';
   imports: [
     MongooseModule.forFeature(
       [{ name: Member.name, schema: MemberSchema }],
-      'chat',
+      'scrum-dice',
     ),
   ],
   providers: [MemberService],
