@@ -5,7 +5,9 @@ import { Member } from '../entities/member.entities';
 
 @Injectable()
 export class MemberService {
-  constructor(@InjectModel(Member.name) private memberModel: Model<Member>) {}
+  constructor(
+    @InjectModel(Member.name, 'chat') private memberModel: Model<Member>,
+  ) {}
 
   async getMember(memberId: string | ObjectId): Promise<Member> {
     return this.memberModel.findById(memberId);

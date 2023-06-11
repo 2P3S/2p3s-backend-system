@@ -5,7 +5,10 @@ import { Member, MemberSchema } from '../entities/member.entities';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Member.name, schema: MemberSchema }]),
+    MongooseModule.forFeature(
+      [{ name: Member.name, schema: MemberSchema }],
+      'chat',
+    ),
   ],
   providers: [MemberService],
   exports: [MemberService],

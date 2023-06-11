@@ -6,7 +6,7 @@ import { Member } from '../entities/member.entities';
 
 @Injectable()
 export class RoomService {
-  constructor(@InjectModel(Room.name) private roomModel: Model<Room>) {}
+  constructor(@InjectModel(Room.name, 'chat') private roomModel: Model<Room>) {}
 
   async createRoom(roomData: Room): Promise<Room> {
     const createdRoom = await new this.roomModel({ ...roomData });

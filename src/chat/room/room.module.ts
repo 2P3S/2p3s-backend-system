@@ -5,7 +5,10 @@ import { Room, RoomSchema } from '../entities/room.entities';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Room.name, schema: RoomSchema }]),
+    MongooseModule.forFeature(
+      [{ name: Room.name, schema: RoomSchema }],
+      'chat',
+    ),
   ],
   providers: [RoomService],
   exports: [RoomService],
