@@ -33,7 +33,7 @@ export class Member {
   })
   room: Room;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   socketId: string;
 
   constructor(name: string, room: Room) {
