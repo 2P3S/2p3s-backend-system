@@ -23,12 +23,14 @@ type EventNames =
   | 'member-connected'
   | 'member-disconnected'
   | 'vote-created'
+  | 'vote-name-updated'
   | 'message';
 const MESSAGES: { [eventName in EventNames]: string } = {
   'join-success': '방 입장에 성공했습니다.',
   'member-connected': '사용자가 입장했습니다.',
   'member-disconnected': '사용자가 나갔습니다.',
   'vote-created': '투표가 생성되었습니다.',
+  'vote-name-updated': '투표 이름이 변경되었습니다.',
   message: '메시지를 전송했습니다.',
 };
 
@@ -77,11 +79,8 @@ export class ScrumDiceGateway
       .then(async ({ room }) => {
         const member = await this.memberManager.updateMemberConnected(
           body.memberId,
-          true,
           socket.id,
         );
-
-        console.log({ room, member });
 
         return this.sendToRoom(socket, 'member-connected', body.roomId, {
           room,
@@ -110,6 +109,36 @@ export class ScrumDiceGateway
         return this.sendToRoom(socket, 'vote-created', body.roomId, {
           room,
           vote: createdVote,
+        });
+      })
+      .catch((err) => this.sendFailure(socket, err.message));
+  }
+
+  @SubscribeMessage('update-vote-name')
+  async handleUpdateVoteName(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: {
+      roomId: string;
+      memberId: string;
+      voteId: string;
+      voteName: string;
+    },
+  ) {
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then(async ({ room }) => {
+        const updatedVote = await this.voteManger.updateVoteName(
+          body.roomId,
+          body.voteId,
+          body.voteName,
+        );
+        if (!updatedVote) {
+          throw new WsException('투표 이름 변경에 실패했습니다.');
+        }
+
+        return this.sendToRoom(socket, 'vote-name-updated', body.roomId, {
+          room,
+          vote: updatedVote,
         });
       })
       .catch((err) => this.sendFailure(socket, err.message));
