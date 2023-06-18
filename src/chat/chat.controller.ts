@@ -14,7 +14,7 @@ export class ChatController {
     return this.chatService.createRoom(roomData);
   }
 
-  @Get('room/enter/:roomId')
+  @Post('room/enter/:roomId')
   enterRoom(
     @Param('roomId') roomId: string,
     @Body() userData: EnterRoomDto,
