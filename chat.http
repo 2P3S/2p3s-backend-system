@@ -23,7 +23,8 @@ POST http://localhost:3000/api/scrum-dice/room/create HTTP/1.1
 Content-Type: application/json
 
 {
-  "roomName": "scrum-dice 채팅방 이름 샘플1"
+  "roomName": "scrum-dice 채팅방 이름 샘플1",
+  "deckType": "FIBONACCI_NUMBERS"
 }
 
 ### 채팅방 입장
