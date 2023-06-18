@@ -4,7 +4,11 @@ import { Member } from './member.entities';
 import { Vote } from './vote.entities';
 
 export type RoomDocument = HydratedDocument<Room>;
-export type Deck = 'origin' | 'sub';
+/**
+ * FIBONACCI_NUMBERS: 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
+ * MODIFIED_FIBONACCI_NUMBERS: 0, 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100
+ */
+export type Deck = 'FIBONACCI_NUMBERS' | 'MODIFIED_FIBONACCI_NUMBERS';
 
 @Schema({
   timestamps: {
