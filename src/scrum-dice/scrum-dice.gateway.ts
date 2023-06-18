@@ -63,25 +63,26 @@ export class ScrumDiceGateway
     });
   }
 
-  // @SubscribeMessage('join-room')
-  // async handleJoinRoom(
-  //   @ConnectedSocket() socket: Socket,
-  //   @MessageBody() body: { roomId: string; memberId: string },
-  // ) {
-  //   this.checkSocketBody(body.roomId, body.memberId)
-  //     .then((data) => this.sendMessage(socket, 'join-success', data))
-  //     .catch((err) => this.sendFailure(socket, err.message));
-  // }
-
   @SubscribeMessage('join-request')
   async handleJoin(
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string; memberId: string },
   ) {
     this.checkSocketBody(body.roomId, body.memberId)
-      .then((data) =>
-        this.sendToRoom(socket, 'member-connected', body.roomId, data),
-      )
+      .then(async ({ room }) => {
+        const member = await this.memberManager.updateMemberConnected(
+          body.memberId,
+          true,
+          socket.id,
+        );
+
+        console.log({ room, member });
+
+        return this.sendToRoom(socket, 'member-connected', body.roomId, {
+          room,
+          member,
+        });
+      })
       .catch((err) => this.sendFailure(socket, err.message));
   }
 
