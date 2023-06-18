@@ -31,7 +31,7 @@ export class RoomService {
     );
 
     if (!room) {
-      throw new NotFoundException(`Room ${roomId} is not found`);
+      throw new NotFoundException(`${roomId} 는 존재하지 않는 방입니다.`);
     }
 
     return this.getRoom(roomId);
@@ -48,7 +48,7 @@ export class RoomService {
     );
 
     if (!room) {
-      throw new NotFoundException(`Room ${room.id} is not found`);
+      throw new NotFoundException(`${room.id} 는 존재하지 않는 방입니다.`);
     }
 
     return this.getRoom(room.id);

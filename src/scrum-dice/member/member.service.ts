@@ -1,6 +1,6 @@
-import { Model, ObjectId } from 'mongoose';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { Member } from '../entities/member.entities';
 
 @Injectable()
@@ -20,15 +20,15 @@ export class MemberService {
 
   async updateMemberConnected(
     memberId: string | ObjectId,
-    status: boolean,
     socketId?: string,
   ): Promise<Member> {
+    // TODO RoomId 확인 추가 필요
     const member = await this.memberModel.findByIdAndUpdate(memberId, {
-      $set: { status, socketId },
+      $set: { status: true, socketId },
     });
 
     if (!member) {
-      throw new NotFoundException(`Member ${memberId} is not found`);
+      throw new NotFoundException(`${memberId} 는 존재하지 않는 멤버입니다.`);
     }
 
     return this.getMember(memberId);
@@ -41,7 +41,7 @@ export class MemberService {
     );
 
     if (!member) {
-      throw new NotFoundException(`Socket ${socketId} is not found`);
+      throw new NotFoundException(`${socketId} 는 존재하지 않는 소켓입니다.`);
     }
 
     return this.getMember(member.id);
