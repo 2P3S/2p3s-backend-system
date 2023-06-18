@@ -3,8 +3,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Member } from './member.entities';
 
 export type CardDocument = HydratedDocument<Card>;
-export type CardType = 'cost-type' | 'not-cost-type';
-export type CostCardContent =
+export type Type = 'cost-type' | 'not-cost-type';
+export type CostContent =
   | '1'
   | '2'
   | '3'
@@ -14,7 +14,8 @@ export type CostCardContent =
   | '20'
   | '40'
   | '100';
-export type NotCostCardContent = 'coffee' | 'question' | 'infinity' | 'break';
+export type NotCostContent = 'coffee' | 'question' | 'infinity' | 'break';
+export type Content = CostContent | NotCostContent;
 
 @Schema({
   timestamps: {
@@ -40,19 +41,19 @@ export class Card {
   member: Member;
 
   @Prop({ required: true })
-  cardType: CardType;
+  type: Type;
 
   @Prop({ required: true })
-  cardContent: CostCardContent | NotCostCardContent;
+  content: Content;
 
   constructor(
     member: Member,
-    cardType: CardType,
-    cardContent: CostCardContent | NotCostCardContent,
+    type: Type,
+    content: Content,
   ) {
     this.member = member;
-    this.cardType = cardType;
-    this.cardContent = cardContent;
+    this.type = type;
+    this.content = content;
   }
 }
 
