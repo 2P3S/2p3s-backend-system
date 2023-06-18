@@ -47,18 +47,13 @@ export class Card {
   content: Content;
 
   @Prop({ required: true })
-  voteStatus: boolean;
+  status: boolean;
 
-  constructor(
-    member: Member,
-    type: Type,
-    content: Content,
-    voteStatus: boolean,
-  ) {
+  constructor(member: Member, type: Type, content: Content) {
     this.member = member;
     this.type = type;
     this.content = content;
-    this.voteStatus = voteStatus;
+    this.status = false;
   }
 }
 
