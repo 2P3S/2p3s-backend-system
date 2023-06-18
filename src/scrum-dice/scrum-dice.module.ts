@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ScrumDiceController } from './scrum-dice.controller';
-import { ScrumDiceService } from './scrum-dice.service';
-import { RoomModule } from './room/room.module';
-import { MemberModule } from './member/member.module';
-import { ScrumDiceGateway } from './scrum-dice.gateway';
-import { RoomSchema } from './entities/room.entities';
-import { MemberSchema } from './entities/member.entities';
 import { CardSchema } from './entities/card.entities';
+import { MemberSchema } from './entities/member.entities';
+import { RoomSchema } from './entities/room.entities';
 import { VoteSchema } from './entities/vote.entities';
+import { MemberModule } from './member/member.module';
+import { RoomModule } from './room/room.module';
+import { ScrumDiceController } from './scrum-dice.controller';
+import { ScrumDiceGateway } from './scrum-dice.gateway';
+import { ScrumDiceService } from './scrum-dice.service';
+import { VoteModule } from './vote/vote.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { VoteSchema } from './entities/vote.entities';
     ),
     RoomModule,
     MemberModule,
+    VoteModule,
   ],
   controllers: [ScrumDiceController],
   providers: [ScrumDiceService, ScrumDiceGateway],
