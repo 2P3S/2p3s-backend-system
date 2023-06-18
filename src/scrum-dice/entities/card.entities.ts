@@ -46,14 +46,15 @@ export class Card {
   @Prop({ required: true })
   content: Content;
 
-  constructor(
-    member: Member,
-    type: Type,
-    content: Content,
-  ) {
+  // 투표 여부를 나타내는 상태 값
+  @Prop({ required: true })
+  status: boolean;
+
+  constructor(member: Member, type: Type, content: Content) {
     this.member = member;
     this.type = type;
     this.content = content;
+    this.status = false;
   }
 }
 
