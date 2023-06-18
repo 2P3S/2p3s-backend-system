@@ -4,6 +4,7 @@ import { Member } from './member.entities';
 import { Vote } from './vote.entities';
 
 export type RoomDocument = HydratedDocument<Room>;
+export type Deck = 'origin' | 'sub';
 
 @Schema({
   timestamps: {
@@ -46,10 +47,14 @@ export class Room {
   })
   votes: Vote[];
 
-  constructor(name: string) {
+  @Prop({ required: true })
+  deck: Deck;
+
+  constructor(name: string, deck: Deck) {
     this.name = name;
     this.members = [];
     this.votes = [];
+    this.deck = deck;
   }
 }
 
