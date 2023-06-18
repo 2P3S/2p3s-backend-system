@@ -1,5 +1,6 @@
-import { HydratedDocument, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, ObjectId, Types } from 'mongoose';
+
 import { Member } from './member.entities';
 
 export type CardDocument = HydratedDocument<Card>;
@@ -46,11 +47,7 @@ export class Card {
   @Prop({ required: true })
   content: Content;
 
-  constructor(
-    member: Member,
-    type: Type,
-    content: Content,
-  ) {
+  constructor(member: Member, type: Type, content: Content) {
     this.member = member;
     this.type = type;
     this.content = content;

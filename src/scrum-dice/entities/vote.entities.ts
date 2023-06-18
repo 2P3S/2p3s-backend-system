@@ -1,8 +1,8 @@
-import { HydratedDocument, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Room } from './room.entities';
-import { Member } from './member.entities';
+import { HydratedDocument, ObjectId, Types } from 'mongoose';
+
 import { Card } from './card.entities';
+import { Room } from './room.entities';
 
 export type VoteDocument = HydratedDocument<Vote>;
 

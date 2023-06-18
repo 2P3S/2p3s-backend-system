@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post } from '@nestjs/common';
 import { ScrumDiceService } from './scrum-dice.service';
 import { CreateRoomDto } from './dto/room/create-room.dto';
 import { EnterRoomDto } from './dto/room/enter-room.dto';

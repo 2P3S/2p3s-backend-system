@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### 채팅방 입장
-GET http://localhost:3000/api/chat/room/enter/6457922f71957d9bcee2dd21 HTTP/1.1
+POST http://localhost:3000/api/chat/room/enter/648f0b2ba569dcbbce86d7f8 HTTP/1.1
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 ### 채팅방 입장
-GET http://localhost:3000/api/scrum-dice/room/enter/647345d5507f409bb7100dc2 HTTP/1.1
+POST http://localhost:3000/api/scrum-dice/room/enter/648f0b13a569dcbbce86d7f6 HTTP/1.1
 Content-Type: application/json
 
 {
