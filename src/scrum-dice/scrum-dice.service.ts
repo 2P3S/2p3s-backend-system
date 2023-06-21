@@ -1,10 +1,11 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+
 import { CreateRoomDto } from './dto/room/create-room.dto';
 import { EnterRoomDto } from './dto/room/enter-room.dto';
-import { Room } from './entities/room.entities';
 import { Member } from './entities/member.entities';
-import { RoomService } from './room/room.service';
+import { Room } from './entities/room.entities';
 import { MemberService } from './member/member.service';
+import { RoomService } from './room/room.service';
 
 @Injectable()
 export class ScrumDiceService {
@@ -17,9 +18,11 @@ export class ScrumDiceService {
 
   async createRoom(roomData: CreateRoomDto): Promise<Room> {
     // TODO 예외처리 추가
-    const { roomName } = roomData;
+    const { roomName, deckType } = roomData;
 
-    const createdRoom = await this.roomManager.createRoom(new Room(roomName));
+    const createdRoom = await this.roomManager.createRoom(
+      new Room(roomName, deckType),
+    );
     if (!createdRoom) {
       throw new HttpException(
         'Room create is failed',

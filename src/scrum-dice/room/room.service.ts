@@ -1,8 +1,9 @@
-import { Model, ObjectId } from 'mongoose';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Room } from '../entities/room.entities';
+import { Model, ObjectId } from 'mongoose';
 import { Member } from '../entities/member.entities';
+import { Room } from '../entities/room.entities';
+import { Vote } from '../entities/vote.entities';
 
 @Injectable()
 export class RoomService {
@@ -30,9 +31,26 @@ export class RoomService {
     );
 
     if (!room) {
-      throw new NotFoundException(`Room ${roomId} is not found`);
+      throw new NotFoundException(`${roomId} 는 존재하지 않는 방입니다.`);
     }
 
     return this.getRoom(roomId);
+  }
+
+  async updateRoomForCreateVote(
+    roomId: string | ObjectId,
+    createdVote: Vote,
+  ): Promise<Room> {
+    const room = await this.roomModel.findByIdAndUpdate(
+      roomId,
+      { $push: { votes: createdVote } },
+      { new: true },
+    );
+
+    if (!room) {
+      throw new NotFoundException(`${room.id} 는 존재하지 않는 방입니다.`);
+    }
+
+    return this.getRoom(room.id);
   }
 }

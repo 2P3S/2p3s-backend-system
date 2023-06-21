@@ -120,7 +120,7 @@ export class ChatGateway
   private async checkMember(roomId) {
     const member = await this.memberManager.getMember(roomId);
     if (!member) {
-      throw new WsException('존재하지 않는 사용자입니다111.');
+      throw new WsException('존재하지 않는 사용자입니다.');
     }
     return member;
   }

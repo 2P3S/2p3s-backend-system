@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -9,22 +10,27 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
-import { RoomService } from './room/room.service';
-import { MemberService } from './member/member.service';
-import { Room } from './entities/room.entities';
 import { Member } from './entities/member.entities';
+import { Room } from './entities/room.entities';
+import { Vote } from './entities/vote.entities';
+import { MemberService } from './member/member.service';
+import { RoomService } from './room/room.service';
+import { VoteService } from './vote/vote.service';
 
 type EventNames =
   | 'join-success'
   | 'member-connected'
   | 'member-disconnected'
+  | 'vote-created'
+  | 'vote-name-updated'
   | 'message';
 const MESSAGES: { [eventName in EventNames]: string } = {
   'join-success': '방 입장에 성공했습니다.',
   'member-connected': '사용자가 입장했습니다.',
   'member-disconnected': '사용자가 나갔습니다.',
+  'vote-created': '투표가 생성되었습니다.',
+  'vote-name-updated': '투표 이름이 변경되었습니다.',
   message: '메시지를 전송했습니다.',
 };
 
@@ -45,6 +51,7 @@ export class ScrumDiceGateway
   constructor(
     private readonly roomManager: RoomService,
     private readonly memberManager: MemberService,
+    private readonly voteManger: VoteService,
   ) {}
 
   afterInit() {
@@ -63,25 +70,77 @@ export class ScrumDiceGateway
     });
   }
 
-  // @SubscribeMessage('join-room')
-  // async handleJoinRoom(
-  //   @ConnectedSocket() socket: Socket,
-  //   @MessageBody() body: { roomId: string; memberId: string },
-  // ) {
-  //   this.checkSocketBody(body.roomId, body.memberId)
-  //     .then((data) => this.sendMessage(socket, 'join-success', data))
-  //     .catch((err) => this.sendFailure(socket, err.message));
-  // }
-
   @SubscribeMessage('join-request')
   async handleJoin(
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string; memberId: string },
   ) {
     this.checkSocketBody(body.roomId, body.memberId)
-      .then((data) =>
-        this.sendToRoom(socket, 'member-connected', body.roomId, data),
-      )
+      .then(async ({ room }) => {
+        const member = await this.memberManager.updateMemberConnected(
+          body.memberId,
+          socket.id,
+        );
+
+        return this.sendToRoom(socket, 'member-connected', body.roomId, {
+          room,
+          member,
+        });
+      })
+      .catch((err) => this.sendFailure(socket, err.message));
+  }
+
+  @SubscribeMessage('create-vote')
+  async handleCreateVote(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; memberId: string; voteName: string },
+  ) {
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then(async ({ room }) => {
+        const createdVote = await this.voteManger.createVote(
+          new Vote(body.voteName, room),
+        );
+        if (!createdVote) {
+          throw new WsException('투표 생성에 실패했습니다.');
+        }
+
+        await this.roomManager.updateRoomForCreateVote(room.id, createdVote);
+
+        return this.sendToRoom(socket, 'vote-created', body.roomId, {
+          room,
+          vote: createdVote,
+        });
+      })
+      .catch((err) => this.sendFailure(socket, err.message));
+  }
+
+  @SubscribeMessage('update-vote-name')
+  async handleUpdateVoteName(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: {
+      roomId: string;
+      memberId: string;
+      voteId: string;
+      voteName: string;
+    },
+  ) {
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then(async ({ room }) => {
+        const updatedVote = await this.voteManger.updateVoteName(
+          body.roomId,
+          body.voteId,
+          body.voteName,
+        );
+        if (!updatedVote) {
+          throw new WsException('투표 이름 변경에 실패했습니다.');
+        }
+
+        return this.sendToRoom(socket, 'vote-name-updated', body.roomId, {
+          room,
+          vote: updatedVote,
+        });
+      })
       .catch((err) => this.sendFailure(socket, err.message));
   }
 
@@ -120,7 +179,7 @@ export class ScrumDiceGateway
   private async checkMember(roomId) {
     const member = await this.memberManager.getMember(roomId);
     if (!member) {
-      throw new WsException('존재하지 않는 사용자입니다111.');
+      throw new WsException('존재하지 않는 사용자입니다.');
     }
     return member;
   }
