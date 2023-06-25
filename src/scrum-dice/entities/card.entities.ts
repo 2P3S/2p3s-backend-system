@@ -1,7 +1,8 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, ObjectId, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { Member } from './member.entities';
+import { Vote } from './vote.entities';
 
 export type CardDocument = HydratedDocument<Card>;
 export type Type = 'cost-type' | 'not-cost-type';
@@ -37,6 +38,13 @@ export class Card {
   @Prop({
     required: true,
     type: Types.ObjectId,
+    ref: 'Vote',
+  })
+  vote: Vote;
+
+  @Prop({
+    required: true,
+    type: Types.ObjectId,
     ref: 'Member',
   })
   member: Member;
@@ -51,7 +59,8 @@ export class Card {
   @Prop({ required: true })
   status: boolean;
 
-  constructor(member: Member, type: Type, content: Content) {
+  constructor(vote: Vote, member: Member, type: Type, content: Content) {
+    this.vote = vote;
     this.member = member;
     this.type = type;
     this.content = content;

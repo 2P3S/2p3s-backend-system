@@ -11,6 +11,8 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
+import { CardService } from './card/card.service';
+import { Card, Content, Type } from './entities/card.entities';
 import { Member } from './entities/member.entities';
 import { Room } from './entities/room.entities';
 import { Vote } from './entities/vote.entities';
@@ -19,18 +21,18 @@ import { RoomService } from './room/room.service';
 import { VoteService } from './vote/vote.service';
 
 type EventNames =
-  | 'join-success'
   | 'member-connected'
   | 'member-disconnected'
   | 'vote-created'
   | 'vote-name-updated'
+  | 'card-submitted'
   | 'message';
 const MESSAGES: { [eventName in EventNames]: string } = {
-  'join-success': '방 입장에 성공했습니다.',
   'member-connected': '사용자가 입장했습니다.',
   'member-disconnected': '사용자가 나갔습니다.',
   'vote-created': '투표가 생성되었습니다.',
   'vote-name-updated': '투표 이름이 변경되었습니다.',
+  'card-submitted': '카드가 제출되었습니다.',
   message: '메시지를 전송했습니다.',
 };
 
@@ -52,6 +54,7 @@ export class ScrumDiceGateway
     private readonly roomManager: RoomService,
     private readonly memberManager: MemberService,
     private readonly voteManger: VoteService,
+    private readonly cardManger: CardService,
   ) {}
 
   afterInit() {
@@ -139,6 +142,43 @@ export class ScrumDiceGateway
         return this.sendToRoom(socket, 'vote-name-updated', body.roomId, {
           room,
           vote: updatedVote,
+        });
+      })
+      .catch((err) => this.sendFailure(socket, err.message));
+  }
+
+  @SubscribeMessage('submit-card')
+  async handleSubmitCard(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: {
+      roomId: string;
+      memberId: string;
+      voteId: string;
+      card: { type: Type; content: Content };
+    },
+  ) {
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then(async ({ member }) => {
+        const vote = await this.voteManger.getVote(body.voteId);
+        if (!vote) {
+          throw new WsException('투표를 찾을 수 없습니다.');
+        }
+
+        const submitCard = await this.cardManger.createCard(
+          new Card(vote, member, body.card.type, body.card.content),
+        );
+
+        if (!submitCard) {
+          throw new WsException('카드 제출에 실패했습니다.');
+        }
+
+        await this.voteManger.updateVoteForSubmitCard(vote.id, submitCard);
+
+        return this.sendToRoom(socket, 'card-submitted', body.roomId, {
+          member,
+          vote,
+          card: submitCard,
         });
       })
       .catch((err) => this.sendFailure(socket, err.message));

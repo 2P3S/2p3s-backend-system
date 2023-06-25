@@ -1,7 +1,7 @@
-import { MongooseModule } from '@nestjs/mongoose';
 import { Vote, VoteSchema } from '../entities/vote.entities';
 
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { VoteService } from './vote.service';
 
 @Module({
