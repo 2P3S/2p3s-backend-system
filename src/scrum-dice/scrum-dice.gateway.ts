@@ -26,6 +26,7 @@ type EventNames =
   | 'vote-created'
   | 'vote-name-updated'
   | 'card-submitted'
+  | 'card-opened'
   | 'message';
 const MESSAGES: { [eventName in EventNames]: string } = {
   'member-connected': '사용자가 입장했습니다.',
@@ -33,6 +34,7 @@ const MESSAGES: { [eventName in EventNames]: string } = {
   'vote-created': '투표가 생성되었습니다.',
   'vote-name-updated': '투표 이름이 변경되었습니다.',
   'card-submitted': '카드가 제출되었습니다.',
+  'card-opened': '카드가 공개되었습니다.',
   message: '메시지를 전송했습니다.',
 };
 
@@ -179,6 +181,28 @@ export class ScrumDiceGateway
           member,
           vote,
           card: submitCard,
+        });
+      })
+      .catch((err) => this.sendFailure(socket, err.message));
+  }
+
+  @SubscribeMessage('open-card')
+  async handleOpenCard(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: { roomId: string; memberId: string; voteId: string },
+  ) {
+    this.checkSocketBody(body.roomId, body.memberId)
+      .then(async ({ room, member }) => {
+        const vote = await this.voteManger.getVote(body.voteId);
+        if (!vote) {
+          throw new WsException('투표를 찾을 수 없습니다.');
+        }
+
+        return this.sendToRoom(socket, 'card-opened', body.roomId, {
+          room,
+          member,
+          vote,
         });
       })
       .catch((err) => this.sendFailure(socket, err.message));
