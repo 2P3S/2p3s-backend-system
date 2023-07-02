@@ -49,7 +49,7 @@ export class VoteService {
     );
 
     if (!vote) {
-      throw new NotFoundException(`${voteId}는 `);
+      throw new NotFoundException(`${voteId}는 존재하지 않는 투표입니다.`);
     }
 
     return this.getVote(vote.id);
