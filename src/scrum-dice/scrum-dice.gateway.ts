@@ -21,6 +21,7 @@ import { RoomService } from './room/room.service';
 import { VoteService } from './vote/vote.service';
 
 type EventNames =
+  | 'room-status'
   | 'member-connected'
   | 'member-disconnected'
   | 'vote-created'
@@ -29,6 +30,7 @@ type EventNames =
   | 'card-opened'
   | 'message';
 const MESSAGES: { [eventName in EventNames]: string } = {
+  'room-status': '방 상태를 전송했습니다.',
   'member-connected': '사용자가 입장했습니다.',
   'member-disconnected': '사용자가 나갔습니다.',
   'vote-created': '투표가 생성되었습니다.',
@@ -87,6 +89,13 @@ export class ScrumDiceGateway
           socket.id,
         );
 
+        socket.join(body.roomId);
+        // TODO : 방의 상태를 가져오는 코드 구현
+        this.sendMessage(socket, 'room-status', {
+          room,
+          member,
+        });
+
         return this.sendToRoom(socket, 'member-connected', body.roomId, {
           room,
           member,
@@ -109,10 +118,13 @@ export class ScrumDiceGateway
           throw new WsException('투표 생성에 실패했습니다.');
         }
 
-        await this.roomManager.updateRoomForCreateVote(room.id, createdVote);
+        const updatedRoom = await this.roomManager.updateRoomForCreateVote(
+          room.id,
+          createdVote,
+        );
 
-        return this.sendToRoom(socket, 'vote-created', body.roomId, {
-          room,
+        return this.sendToRoomAndMe(socket, 'vote-created', body.roomId, {
+          room: updatedRoom,
           vote: createdVote,
         });
       })
@@ -141,7 +153,7 @@ export class ScrumDiceGateway
           throw new WsException('투표 이름 변경에 실패했습니다.');
         }
 
-        return this.sendToRoom(socket, 'vote-name-updated', body.roomId, {
+        return this.sendToRoomAndMe(socket, 'vote-name-updated', body.roomId, {
           room,
           vote: updatedVote,
         });
@@ -177,7 +189,7 @@ export class ScrumDiceGateway
 
         await this.voteManger.updateVoteForSubmitCard(vote.id, submitCard);
 
-        return this.sendToRoom(socket, 'card-submitted', body.roomId, {
+        return this.sendToRoomAndMe(socket, 'card-submitted', body.roomId, {
           member,
           vote,
           card: submitCard,
@@ -199,22 +211,12 @@ export class ScrumDiceGateway
           throw new WsException('투표를 찾을 수 없습니다.');
         }
 
-        return this.sendToRoom(socket, 'card-opened', body.roomId, {
+        return this.sendToRoomAndMe(socket, 'card-opened', body.roomId, {
           room,
           member,
           vote,
         });
       })
-      .catch((err) => this.sendFailure(socket, err.message));
-  }
-
-  @SubscribeMessage('message')
-  async handleMessage(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { roomId: string; memberId: string; message: string },
-  ) {
-    this.checkSocketBody(body.roomId, body.memberId)
-      .then((data) => this.sendToRoom(socket, 'message', body.roomId, data))
       .catch((err) => this.sendFailure(socket, err.message));
   }
 
@@ -270,7 +272,24 @@ export class ScrumDiceGateway
     roomId: string,
     data: object,
   ) {
-    client.join(roomId);
+    client.to(roomId).emit(eventName, {
+      success: true,
+      message: MESSAGES[eventName],
+      data,
+    });
+  }
+
+  private sendToRoomAndMe(
+    client: Socket,
+    eventName: EventNames,
+    roomId: string,
+    data: object,
+  ) {
+    client.emit(eventName, {
+      success: true,
+      message: MESSAGES[eventName],
+      data,
+    });
     client.to(roomId).emit(eventName, {
       success: true,
       message: MESSAGES[eventName],

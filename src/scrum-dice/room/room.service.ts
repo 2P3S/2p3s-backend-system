@@ -17,7 +17,10 @@ export class RoomService {
   }
 
   async getRoom(roomId: string | ObjectId): Promise<Room> {
-    return this.roomModel.findById(roomId);
+    return this.roomModel
+      .findById(roomId)
+      .populate('members')
+      .populate('votes');
   }
 
   async updateRoomForAddMember(

@@ -17,7 +17,7 @@ export class VoteService {
 
   async getVote(voteId: string): Promise<Vote> {
     // TODO room check 추가 필요
-    return this.voteModel.findById(voteId);
+    return this.voteModel.findById(voteId).populate('cards');
   }
 
   async updateVoteName(
