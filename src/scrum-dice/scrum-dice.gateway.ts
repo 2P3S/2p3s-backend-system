@@ -90,7 +90,6 @@ export class ScrumDiceGateway
         );
 
         socket.join(body.roomId);
-        // TODO : 방의 상태를 가져오는 코드 구현
         const data = { room, member };
         this.sendMessage(socket, 'room-status', data);
         return this.sendToRoom(socket, 'member-connected', body.roomId, data);
