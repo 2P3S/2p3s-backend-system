@@ -7,6 +7,8 @@ import { Vote } from './vote.entities';
 export type CardDocument = HydratedDocument<Card>;
 export type Type = 'cost-type' | 'not-cost-type';
 export type CostContent =
+  | '0'
+  | '0.5'
   | '1'
   | '2'
   | '3'
@@ -14,9 +16,13 @@ export type CostContent =
   | '8'
   | '13'
   | '20'
+  | '21'
+  | '34'
   | '40'
+  | '55'
+  | '89'
   | '100';
-export type NotCostContent = 'coffee' | 'question' | 'infinity' | 'break';
+export type NotCostContent = 'coffee' | 'question' | 'king' | 'break';
 export type Content = CostContent | NotCostContent;
 
 @Schema({

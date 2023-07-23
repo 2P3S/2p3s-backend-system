@@ -8,6 +8,8 @@ export function isValidCardContent(content: any): boolean {
 
 function isValidCostContent(content: any): boolean {
   return (
+    content === '0' ||
+    content === '0.5' ||
     content === '1' ||
     content === '2' ||
     content === '3' ||
@@ -15,7 +17,11 @@ function isValidCostContent(content: any): boolean {
     content === '8' ||
     content === '13' ||
     content === '20' ||
+    content === '21' ||
+    content === '34' ||
     content === '40' ||
+    content === '55' ||
+    content === '89' ||
     content === '100'
   );
 }
@@ -24,7 +30,7 @@ function isValidNotCostContent(content: any): boolean {
   return (
     content === 'coffee' ||
     content === 'question' ||
-    content === 'infinity' ||
+    content === 'king' ||
     content === 'break'
   );
 }
