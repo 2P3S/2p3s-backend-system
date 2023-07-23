@@ -71,10 +71,16 @@ export class ScrumDiceGateway
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
     this.logger.log(`❌ ${socket.id} 소켓 연결 해제`);
-    // const member = await this.checkSocket(socket.id);
-    // this.sendToRoom(socket, 'member-disconnected', member.room.toString(), {
-    //   member,
-    // });
+    try {
+      const member = await this.checkSocket(socket.id);
+      console.log(member.room.toString(), member.id);
+
+      this.sendToRoom(socket, 'member-disconnected', member.room.toString(), {
+        member,
+      });
+    } catch (error) {
+      this.logger.error('소켓 연결 종료 실패', socket.id, error);
+    }
   }
 
   @SubscribeMessage('join-request')
@@ -82,15 +88,20 @@ export class ScrumDiceGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string; memberId: string },
   ) {
+    console.log('join-request', body.roomId, body.memberId, socket.id);
     this.checkSocketBody(body.roomId, body.memberId)
-      .then(async ({ room }) => {
+      .then(async ({}) => {
         const member = await this.memberManager.updateMemberConnected(
           body.memberId,
           socket.id,
         );
 
+        const data = {
+          member,
+          room: await this.roomManager.getRoom(member.room.toString()),
+        };
+
         socket.join(body.roomId);
-        const data = { room, member };
         this.sendMessage(socket, 'room-status', data);
         return this.sendToRoom(socket, 'member-connected', body.roomId, data);
       })
