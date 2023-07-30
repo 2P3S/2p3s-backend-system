@@ -204,11 +204,14 @@ export class ScrumDiceGateway
           throw new WsException('카드 제출에 실패했습니다.');
         }
 
-        await this.voteManger.updateVoteForSubmitCard(vote.id, submitCard);
+        const updatedVote = await this.voteManger.updateVoteForSubmitCard(
+          vote.id,
+          submitCard,
+        );
 
         return this.sendToRoomAndMe(socket, 'card-submitted', body.roomId, {
           member,
-          vote,
+          vote: updatedVote,
           card: submitCard,
         });
       })
@@ -228,10 +231,14 @@ export class ScrumDiceGateway
           throw new WsException('투표를 찾을 수 없습니다.');
         }
 
+        const updatedVote = await this.voteManger.updateVoteForOpenCard(
+          body.voteId,
+        );
+
         return this.sendToRoomAndMe(socket, 'card-opened', body.roomId, {
           room,
           member,
-          vote,
+          vote: updatedVote,
         });
       })
       .catch((err) => this.sendFailure(socket, err.message));

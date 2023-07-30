@@ -54,4 +54,16 @@ export class VoteService {
 
     return this.getVote(vote.id);
   }
+
+  async updateVoteForOpenCard(voteId: string | ObjectId): Promise<Vote> {
+    const vote = await this.voteModel.findByIdAndUpdate(voteId, {
+      $set: { status: true },
+    });
+
+    if (!vote) {
+      throw new NotFoundException(`${voteId}의 개표에 실패하였습니다.`);
+    }
+
+    return this.getVote(vote.id);
+  }
 }
