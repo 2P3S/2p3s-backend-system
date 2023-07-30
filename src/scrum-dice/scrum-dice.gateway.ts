@@ -225,7 +225,7 @@ export class ScrumDiceGateway
     body: { roomId: string; memberId: string; voteId: string },
   ) {
     this.checkSocketBody(body.roomId, body.memberId)
-      .then(async ({ room, member }) => {
+      .then(async () => {
         const vote = await this.voteManger.getVote(body.voteId);
         if (!vote) {
           throw new WsException('투표를 찾을 수 없습니다.');
@@ -236,8 +236,6 @@ export class ScrumDiceGateway
         );
 
         return this.sendToRoomAndMe(socket, 'card-opened', body.roomId, {
-          room,
-          member,
           vote: updatedVote,
         });
       })
