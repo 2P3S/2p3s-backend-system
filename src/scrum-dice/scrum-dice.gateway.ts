@@ -187,6 +187,7 @@ export class ScrumDiceGateway
       }
     } catch (err) {
       this.sendFailure(socket, err.message);
+      return;
     }
 
     this.checkSocketBody(body.roomId, body.memberId)
@@ -204,7 +205,8 @@ export class ScrumDiceGateway
 
         const updatedVote = await this.voteManger.updateVoteForSubmitCard(
           vote.id,
-          submitCard,
+          body.memberId,
+          body.card,
         );
 
         return this.sendToRoomAndMe(socket, 'card-submitted', body.roomId, {
