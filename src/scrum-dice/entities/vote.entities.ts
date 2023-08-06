@@ -1,4 +1,4 @@
-import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, ObjectId, Types } from 'mongoose';
 
 import { Room } from './room.entities';
@@ -29,12 +29,7 @@ export class Vote {
   @Prop({ required: true })
   status: boolean;
 
-  @Prop(
-    raw({
-      type: { type: String, required: true },
-      content: { type: Number, required: true },
-    }),
-  )
+  @Prop({ type: Object })
   cards: Cards;
 
   @Prop({
