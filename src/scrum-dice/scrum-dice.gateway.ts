@@ -18,6 +18,10 @@ import { Room } from './entities/room.entities';
 import { Vote } from './entities/vote.entities';
 import { MemberService } from './member/member.service';
 import { RoomService } from './room/room.service';
+import {
+  isValidCardContent,
+  isValidCardType,
+} from './validator/card-type.validator';
 import { VoteService } from './vote/vote.service';
 
 type EventNames =
@@ -71,10 +75,15 @@ export class ScrumDiceGateway
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
     this.logger.log(`❌ ${socket.id} 소켓 연결 해제`);
-    // const member = await this.checkSocket(socket.id);
-    // this.sendToRoom(socket, 'member-disconnected', member.room.toString(), {
-    //   member,
-    // });
+    try {
+      const member = await this.checkSocket(socket.id);
+
+      this.sendToRoom(socket, 'member-disconnected', member.room.toString(), {
+        member,
+      });
+    } catch (error) {
+      this.logger.error('소켓 연결 종료 실패', socket.id, error);
+    }
   }
 
   @SubscribeMessage('join-request')
@@ -83,14 +92,18 @@ export class ScrumDiceGateway
     @MessageBody() body: { roomId: string; memberId: string },
   ) {
     this.checkSocketBody(body.roomId, body.memberId)
-      .then(async ({ room }) => {
+      .then(async ({}) => {
         const member = await this.memberManager.updateMemberConnected(
           body.memberId,
           socket.id,
         );
 
+        const data = {
+          member,
+          room: await this.roomManager.getRoom(member.room.toString()),
+        };
+
         socket.join(body.roomId);
-        const data = { room, member };
         this.sendMessage(socket, 'room-status', data);
         return this.sendToRoom(socket, 'member-connected', body.roomId, data);
       })
@@ -165,6 +178,17 @@ export class ScrumDiceGateway
       card: { type: Type; content: Content };
     },
   ) {
+    try {
+      if (
+        !isValidCardType(body.card.type) ||
+        !isValidCardContent(body.card.content)
+      ) {
+        throw new WsException('유효하지 않은 카드가 제출되었습니다.');
+      }
+    } catch (err) {
+      this.sendFailure(socket, err.message);
+    }
+
     this.checkSocketBody(body.roomId, body.memberId)
       .then(async ({ member }) => {
         const vote = await this.voteManger.getVote(body.voteId);
@@ -180,11 +204,14 @@ export class ScrumDiceGateway
           throw new WsException('카드 제출에 실패했습니다.');
         }
 
-        await this.voteManger.updateVoteForSubmitCard(vote.id, submitCard);
+        const updatedVote = await this.voteManger.updateVoteForSubmitCard(
+          vote.id,
+          submitCard,
+        );
 
         return this.sendToRoomAndMe(socket, 'card-submitted', body.roomId, {
           member,
-          vote,
+          vote: updatedVote,
           card: submitCard,
         });
       })
@@ -198,16 +225,18 @@ export class ScrumDiceGateway
     body: { roomId: string; memberId: string; voteId: string },
   ) {
     this.checkSocketBody(body.roomId, body.memberId)
-      .then(async ({ room, member }) => {
+      .then(async () => {
         const vote = await this.voteManger.getVote(body.voteId);
         if (!vote) {
           throw new WsException('투표를 찾을 수 없습니다.');
         }
 
+        const updatedVote = await this.voteManger.updateVoteForOpenCard(
+          body.voteId,
+        );
+
         return this.sendToRoomAndMe(socket, 'card-opened', body.roomId, {
-          room,
-          member,
-          vote,
+          vote: updatedVote,
         });
       })
       .catch((err) => this.sendFailure(socket, err.message));
