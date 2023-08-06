@@ -1,5 +1,5 @@
-export type CardType = 'cost-type' | 'not-cost-type';
-export type CardCostContent =
+export type Type = 'cost-type' | 'not-cost-type';
+export type CostContent =
   | '0'
   | '0.5'
   | '1'
@@ -15,7 +15,7 @@ export type CardCostContent =
   | '55'
   | '89'
   | '100';
-export type CardNotCostContent = 'coffee' | 'question' | 'king' | 'break';
-export type CardContent = CardCostContent | CardNotCostContent;
-export type Card = { type: CardType; content: CardContent };
+export type NotCostContent = 'coffee' | 'question' | 'king' | 'break';
+export type Content = CostContent | NotCostContent;
+export type Card = { type: Type; content: Content };
 export type Cards = Record<string, Card>;
