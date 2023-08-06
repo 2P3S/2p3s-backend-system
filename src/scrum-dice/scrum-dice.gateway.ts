@@ -11,11 +11,12 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
-import { CardService } from './card/card.service';
-import { Card, Content, Type } from './entities/card.entities';
+
 import { Member } from './entities/member.entities';
 import { Room } from './entities/room.entities';
 import { Vote } from './entities/vote.entities';
+import { Card } from './entities/card.entities';
+
 import { MemberService } from './member/member.service';
 import { RoomService } from './room/room.service';
 import {
@@ -62,7 +63,6 @@ export class ScrumDiceGateway
     private readonly roomManager: RoomService,
     private readonly memberManager: MemberService,
     private readonly voteManger: VoteService,
-    private readonly cardManger: CardService,
   ) {}
 
   afterInit() {
@@ -175,7 +175,7 @@ export class ScrumDiceGateway
       roomId: string;
       memberId: string;
       voteId: string;
-      card: { type: Type; content: Content };
+      card: Card;
     },
   ) {
     try {
@@ -196,9 +196,7 @@ export class ScrumDiceGateway
           throw new WsException('투표를 찾을 수 없습니다.');
         }
 
-        const submitCard = await this.cardManger.createCard(
-          new Card(vote, member, body.card.type, body.card.content),
-        );
+        const submitCard = body.card;
 
         if (!submitCard) {
           throw new WsException('카드 제출에 실패했습니다.');

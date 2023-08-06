@@ -1,5 +1,3 @@
-import { CardModule } from './card/card.module';
-import { CardSchema } from './entities/card.entities';
 import { MemberModule } from './member/member.module';
 import { MemberSchema } from './entities/member.entities';
 import { Module } from '@nestjs/common';
@@ -18,7 +16,6 @@ import { VoteSchema } from './entities/vote.entities';
       [
         { name: 'Room', schema: RoomSchema },
         { name: 'Member', schema: MemberSchema },
-        { name: 'Card', schema: CardSchema },
         { name: 'Vote', schema: VoteSchema },
       ],
       'scrum-dice',
@@ -26,7 +23,6 @@ import { VoteSchema } from './entities/vote.entities';
     RoomModule,
     MemberModule,
     VoteModule,
-    CardModule,
   ],
   controllers: [ScrumDiceController],
   providers: [ScrumDiceService, ScrumDiceGateway],

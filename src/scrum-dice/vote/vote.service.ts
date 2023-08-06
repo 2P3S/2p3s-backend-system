@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { Card } from '../entities/card.entities';
+
 import { Vote } from '../entities/vote.entities';
+import { Card } from '../entities/card.entities';
 
 @Injectable()
 export class VoteService {
