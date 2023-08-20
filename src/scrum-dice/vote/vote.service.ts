@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { Card } from '../entities/card.entities';
+
 import { Vote } from '../entities/vote.entities';
+import { Card } from '../entities/card.entities';
 
 @Injectable()
 export class VoteService {
@@ -17,7 +18,7 @@ export class VoteService {
 
   async getVote(voteId: string): Promise<Vote> {
     // TODO room check 추가 필요
-    return this.voteModel.findById(voteId).populate('cards');
+    return this.voteModel.findById(voteId);
   }
 
   async updateVoteName(
@@ -40,19 +41,14 @@ export class VoteService {
 
   async updateVoteForSubmitCard(
     voteId: string | ObjectId,
+    memberId: string,
     submitCard: Card,
   ): Promise<Vote> {
-    const vote = await this.voteModel.findByIdAndUpdate(
-      voteId,
-      { $push: { cards: submitCard } },
-      { new: true },
-    );
+    const vote = await this.voteModel.findById(voteId);
+    vote.cards = { ...vote.cards, [memberId]: submitCard };
 
-    if (!vote) {
-      throw new NotFoundException(`${voteId}는 존재하지 않는 투표입니다.`);
-    }
-
-    return this.getVote(vote.id);
+    vote.save();
+    return vote;
   }
 
   async updateVoteForOpenCard(voteId: string | ObjectId): Promise<Vote> {
