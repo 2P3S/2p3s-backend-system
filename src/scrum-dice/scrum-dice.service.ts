@@ -17,7 +17,6 @@ export class ScrumDiceService {
   ) {}
 
   async createRoom(roomData: CreateRoomDto): Promise<Room> {
-    // TODO 예외처리 추가
     const { roomName, deckType } = roomData;
 
     const createdRoom = await this.roomManager.createRoom(
@@ -33,10 +32,12 @@ export class ScrumDiceService {
   }
 
   async enterRoom(roomId: string, userData: EnterRoomDto): Promise<Member> {
-    // TODO 예외처리 추가
     const room = await this.roomManager.getRoom(roomId);
     if (!room) {
-      throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        '요청한 방의 정보가 없습니다.',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     const { memberName } = userData;
@@ -44,13 +45,16 @@ export class ScrumDiceService {
       new Member(memberName, room),
     );
     if (!newMember) {
-      throw new HttpException('Member create is failed', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        '방의 멤버 생성에 실패하였습니다.',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     this.roomManager.updateRoomForAddMember(roomId, newMember).catch((err) => {
       this.logger.error(err);
       throw new HttpException(
-        'Room update is failed',
+        '방의 멤버 정보 업데이트에 실패하였습니다.',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     });
