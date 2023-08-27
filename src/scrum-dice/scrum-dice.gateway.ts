@@ -94,6 +94,7 @@ export class ScrumDiceGateway
     this.checkSocketBody(body.roomId, body.memberId)
       .then(async ({}) => {
         const member = await this.memberManager.updateMemberConnected(
+          body.roomId,
           body.memberId,
           socket.id,
         );

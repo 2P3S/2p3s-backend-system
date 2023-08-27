@@ -19,15 +19,15 @@ export class MemberService {
   }
 
   async updateMemberConnected(
+    roomId: string | ObjectId,
     memberId: string | ObjectId,
     socketId?: string,
   ): Promise<Member> {
-    // TODO RoomId 확인 추가 필요
     const member = await this.memberModel.findByIdAndUpdate(memberId, {
       $set: { status: true, socketId },
     });
 
-    if (!member) {
+    if (!member || member.room.toString() !== roomId) {
       throw new NotFoundException(`${memberId} 는 존재하지 않는 멤버입니다.`);
     }
 
