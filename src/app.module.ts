@@ -11,18 +11,12 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(
-      `mongodb://${process.env.CHAT_MONGO_ID}:${process.env.CHAT_MONGO_PASSWORD}@${process.env.CHAT_MONGO_URL}`,
-      {
-        connectionName: 'chat',
-      },
-    ),
-    MongooseModule.forRoot(
-      `mongodb://${process.env.SCRUM_DICE_MONGO_ID}:${process.env.SCRUM_DICE_MONGO_PASSWORD}@${process.env.SCRUM_DICE_MONGO_URL}`,
-      {
-        connectionName: 'scrum-dice',
-      },
-    ),
+    MongooseModule.forRoot(process.env.CHAT_MONGO_URL, {
+      connectionName: 'chat',
+    }),
+    MongooseModule.forRoot(process.env.SCRUM_DICE_MONGO_URL, {
+      connectionName: 'scrum-dice',
+    }),
     ChatModule,
     ScrumDiceModule,
   ],
