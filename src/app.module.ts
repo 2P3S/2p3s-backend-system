@@ -4,13 +4,16 @@ import { AppService } from './app.service';
 import { ChatModule } from './chat/chat.module';
 import { ScrumDiceModule } from './scrum-dice/scrum-dice.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import mongoose from 'mongoose';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/chat', {
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.CHAT_MONGO_URL, {
       connectionName: 'chat',
     }),
-    MongooseModule.forRoot('mongodb://localhost:27017/scrum-dice', {
+    MongooseModule.forRoot(process.env.SCRUM_DICE_MONGO_URL, {
       connectionName: 'scrum-dice',
     }),
     ChatModule,
@@ -19,4 +22,9 @@ import { MongooseModule } from '@nestjs/mongoose';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure() {
+    const isDev = process.env.NODE_ENV === 'development';
+    mongoose.set('debug', isDev);
+  }
+}
